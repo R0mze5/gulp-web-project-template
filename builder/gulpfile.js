@@ -7,8 +7,8 @@
 /*-                                                        -*/
 /*-********************************************************-*/
 /*----------------------------------------------------------*/
-let typeProject /*= 'mylibs';*/
-const project = '!template';
+let typeProject /*= 'mylibs';*/;
+const project = 'tuya.web';
 
 
 
@@ -319,7 +319,7 @@ gulp.task('es6',  function() {
  
 gulp.task('images', function () {
 	return gulp
-		.src([sourcePath+'images/*.*'])
+		.src([sourcePath+'images/**/*.*'])
 		.pipe(image())
 		.pipe(gulp.dest(sourcePath+'images'));
 });

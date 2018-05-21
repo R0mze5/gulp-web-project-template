@@ -3,6 +3,7 @@
 
 #зависимости проекта
 node_modules
+package-lock.json
 
 #Атрибуты папки OSX
 .DS_Store
