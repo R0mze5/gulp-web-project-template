@@ -27,5 +27,7 @@
     "vinyl-ftp": "^0.6.1",
     "yargs": "^11.0.0"
   },
-  "dependencies": {}
+  "dependencies": {
+    "npm": "^6.1.0"
+  }
 }

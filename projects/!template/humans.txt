@@ -1,6 +1,0 @@
-# humanstxt.org/
-# The humans responsible & technology colophon
-
-# TEAM
-
-    JetMix -- Developer -- http://jet-mix.ru/

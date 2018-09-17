@@ -8,8 +8,8 @@ var argv = require('yargs').argv;
 /*-                                                        -*/
 /*-********************************************************-*/
 /*----------------------------------------------------------*/
-let typeProject = 'Dropbox/projects';
-let project = argv.project ? argv.project :'!template';
+let typeProject = 'projects'; // folder with projects
+let project = argv.project ? argv.project :'cognition.web';
 
 
 /*-********************************************************-*/
