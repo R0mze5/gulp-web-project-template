@@ -1,5 +1,4 @@
 *
-
 #отладочные журналы npm
 *.log
 
@@ -13,6 +12,8 @@ package-lock.json
 .DS_Store
 
 
-!/gulp
-!/projects/!template/*
-!.gitignore
+!/gulp/gulpfile.js
+! /projects/!template/*
+/.gitignore
+
+
