@@ -3,6 +3,8 @@
 #отладочные журналы npm
 *.log
 
+.git
+
 #зависимости проекта
 node_modules
 package-lock.json
