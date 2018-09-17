@@ -1,0 +1,84 @@
+/* <
+.checkbox>.checkbox__container>input.checkbox__input#checkbox_agreement[type="checkbox"]+label.checkbox__label[for="checkbox_agreement"]>.checkbox__content
+*/
+
+.checkbox{
+
+    --box-size: 9px;
+    --inside_color: #ffffff;
+    --check_backround_color: var(--green_color);
+
+    --border-width: 1px;
+    --border-radius: 5px;
+    --border_color: var(--charcoal-grey);
+    --error_color: #b00020;
+
+    --foolish_space: 4px;
+
+    --margin-right: 8px;
+
+    display: flex;
+    color: inherit;
+    font-family: inherit;
+    font-size: inherit;
+    font-weight: inherit;
+    line-height: inherit;
+
+    &.error{
+        --border-width: 2px;
+        & .checkbox__label::before{
+            box-shadow: 0 0 0 var(--border-width) var(--error_color);
+        }
+    }
+
+    &__input{
+        display: none;
+        &:checked + .checkbox__label::before{
+            background-color: var(--check_backround_color);
+        }
+    }
+
+    &__label{
+        cursor: pointer;
+        color: inherit;
+        font-family: inherit;
+        font-size: inherit;
+        font-weight: inherit;
+        line-height: inherit;
+        display: flex;
+
+        &::before{         
+            display: block;
+            box-sizing: content-box;
+            content: '';
+            width: var(--box-size);
+            height: var(--box-size);
+            min-width: var(--box-size);
+            min-height: var(--box-size);
+            max-width: var(--box-size);
+            max-height: var(--box-size);
+            background-color: var(--inside_color);
+            border: solid var(--foolish_space) var(--inside_color);
+            box-shadow: 0 0 0 var(--border-width) var(--border_color);
+            border-radius: var(--border-radius);
+            margin-right: var(--margin-right);
+        }
+    }
+
+    &__content,
+    &__link{
+        color: inherit;
+        font-family: inherit;
+        font-size: inherit;
+        font-weight: inherit;
+        line-height: inherit;
+    }
+
+    &__content{
+        padding-top: 3px;
+    }
+
+    &__link{
+        text-decoration: underline solid;
+    }
+}

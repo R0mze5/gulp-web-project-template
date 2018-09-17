@@ -1,0 +1,52 @@
+.modal{
+	position: fixed;
+	display: none;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	width: 100%;
+	height: 100%;
+	background-color: rgba(0,0,0,0.64);
+	z-index: 50;
+	justify-content: center;
+	align-items: center;
+    padding: 10px;
+    
+	&.open{
+		display: flex;
+	}
+		
+	&__container{
+		max-width: 80%;
+		background-color: #fff;
+        max-height: 100%;
+        overflow-y: auto;
+        position: relative;
+    }
+    
+
+	&__close{
+		width: 15px;
+        height: 15px;
+        position: absolute;
+        top: 17px;
+        right: 10px;
+        cursor: pointer;
+
+        & svg{
+            width: 100%;
+            height: 100%;
+            fill: #000000;
+        }
+        
+        @media @tablet{
+            top: 23px;
+            right: 23px;
+            width: 18px;
+            height: 18px;
+        }
+	}
+}
+
+// @import '../import/subscribe_modal.less';

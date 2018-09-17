@@ -1,0 +1,74 @@
+.radio{
+
+    @media @tablet_landscape{
+    display: flex;
+    align-items: flex-end;
+
+    }
+
+    &__container{
+        margin-right: 0;
+    }
+
+    &__input{
+        display: none;
+
+        &:checked + .radio__label .radio__label__box{
+            background-color: var(--blue_color);
+        }
+    }
+
+    &__label{
+        font-size: 18px;
+        font-family: var(--ff_second);
+        cursor: pointer;
+        display: flex;
+
+        @media @tablet_landscape{
+            flex-direction: column;
+        }
+
+        &__box{
+            box-sizing: initial;
+            display: block;
+            width: 13px;
+            height: 13px;
+            min-width: 13px;
+            min-height: 13px;
+            max-width: 13px;
+            max-height: 13px;
+            background-color: var(--gray_light);
+            border: solid 4px var(--gray_light);
+            box-shadow: 0 0 0 1px var(--gray);
+            border-radius: 50%;
+        }
+
+    }
+
+    &__information{
+        font-family: var(--ff_second);
+        font-size: 16px;
+        line-height: 1.2;
+
+        &__additional{
+            font-family: inherit;
+            font-size: 0.7em;
+            font-weight: 300;
+            &::before{
+                content: '(';
+                display: inline;
+            }
+            &::after{
+                content: ')';
+                display: inline;
+            }
+        }
+
+        &__link{
+            font-family: inherit;
+            font-size: inherit;
+            text-decoration: underline solid var(--blue_color);
+            color: var(--blue_color);
+        }
+    }
+}

@@ -1,0 +1,34 @@
+.socials{
+	display: flex;
+	--size: 34px;
+
+	&__link{
+		width: var(--size);
+		height: var(--size);
+		border: solid 1.4px #404040;
+		margin-right: 20px;
+		border-radius: 50%;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		transition: border-color 300ms ease-in-out;
+
+
+		&:hover{
+			border-color: #fff; 
+		}
+		
+		&:last-child{
+			margin-right: 0;
+		}
+	}
+
+	&__svg{
+		width: 70%;
+		height: 70%;
+		object-fit: contain;
+		fill: #fff;
+	}
+
+
+}

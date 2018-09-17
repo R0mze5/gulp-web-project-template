@@ -1,0 +1,14 @@
+header.header
+    .header__wrapper
+        .header__container
+
+            a.header__logo(href="/")
+                svg(xmlns="http://www.w3.org/2000/svg") 
+                    use(xlink:href="#svg-logo-header")
+
+            include ../components/hamburger.pug
+        
+            ul.header__list
+                each val in [["/portfolio", 'Кейсы'], ["/services", 'Услуги'],["/about", 'О нас'], ["/contacts", 'Контакты'], ["/blog", 'Блог'], ]
+                    li.header__list__item
+                        a.header__list__link(href=val[0])= val[1]
