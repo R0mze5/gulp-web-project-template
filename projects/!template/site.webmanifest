@@ -1,8 +1,0 @@
-{
-    "icons": [{
-        "src": "/local/templates/website/images/favicon/favicon-192х192.png",
-        "sizes": "192x192",
-        "type": "image/png"
-    }],
-    "start_url": "/"
-}

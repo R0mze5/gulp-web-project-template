@@ -1,4 +1,0 @@
-<?
-$MESS["LEARNING_TEMPLATE_DESCRIPTION_NAME"] = "Website template";
-$MESS["LEARNING_TEMPLATE_DESCRIPTION_DESC"] = "Website template";
-?>

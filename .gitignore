@@ -14,7 +14,8 @@ package-lock.json
 !gulp
 !projects
 projects/*
-!projects/!template
+!projects/project.example
 
 !.gitignore
+!README.md
 

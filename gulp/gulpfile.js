@@ -1,5 +1,5 @@
 'use strict';
-var argv = require('yargs').argv;
+var argv = require('yargs').argv; /*(install global)*/
 /*----------------------------------------------------------*/
 /*-********************************************************-*/
 /*-                                                        -*/
@@ -8,50 +8,57 @@ var argv = require('yargs').argv;
 /*-********************************************************-*/
 /*----------------------------------------------------------*/
 let typeProject = argv.folder ? argv.folder :'projects'; // folder with projects
-let project = argv.project ? argv.project :'!template';
+let project = argv.project ? argv.project :'project.example';
 
 
 /*-********************************************************-*/
 /*-                       require                          -*/
 /*-********************************************************-*/
 
-const gulp = require('gulp');
-
-// ----------   bower   ----------
-/*const mainBowerFiles = require('main-bower-files');*/
+const gulp = require('gulp'); /*(install global)*/
+const browserSync = require('browser-sync'); /*(install global)*/
+const gulpSequence = require('gulp-sequence') // allow run task after end previous task
+const debug = require('gulp-debug');
+const streamfilter = require('streamfilter');
+const plumber = require('gulp-plumber'); // error control
+const path = require('path');
+const gulpif = require('gulp-if');
+const del = require('del');
 
 // ----------   operations with files   ----------
+const sourcemaps = require('gulp-sourcemaps');
 const concat = require('gulp-concat');
 const rename = require('gulp-rename');
-const path = require('path');
-const del = require('del');
-const gulpif = require('gulp-if');
+const gap = require('gulp-append-prepend'); // insert file into other
 
-const browserSync = require('browser-sync'); /*(install global)*/
-const gutil = require( 'gulp-util' );  
-const ftp = require( 'vinyl-ftp' );
-const sftp = require('gulp-sftp');
+const gutil = require( 'gulp-util');  
+// const ftp = require( 'vinyl-ftp' );
+// const sftp = require('gulp-sftp');
 
 
 // ----------   operations with styles   ----------
 const less = require('gulp-less');
+const sass = require('gulp-sass');
 const autoprefixer = require('gulp-autoprefixer');
 const cssnano = require('gulp-cssnano');
-const sourcemaps = require('gulp-sourcemaps');
 
 
 // ----------   operations with scripts   ----------
-const babel = require('gulp-babel');
+/* const babel = require('gulp-babel'); */
 /*const eslint = require('gulp-eslint');*/
 let uglify = require('gulp-uglify-es').default;
 
 
 // ----------   operations with pagess   ----------
 const pug = require('gulp-pug');
+const replace = require('gulp-replace');
 
 // ----------   operations with images   ----------
-/* const image = require('gulp-image'); */
 const imagemin = require('gulp-imagemin');
+const imageminGifsicle = require('imagemin-gifsicle');
+const imageminJpegRecompress = require('imagemin-jpeg-recompress');
+const imageminPngquant = require('imagemin-pngquant');
+const imageminSvgo = require('imagemin-svgo');
 
 /*-********************************************************-*/
 /*-                    ./require                           -*/
@@ -62,12 +69,11 @@ const imagemin = require('gulp-imagemin');
 /*-********************************************************-*/
 /*-                     configurate                        -*/
 /*-********************************************************-*/
-typeProject = typeProject ? typeProject : 'projects'
+// typeProject = typeProject ? typeProject : 'projects'
 const projectsFolder = '../' + typeProject + '/' + project;
 
 global.variables = {};
 
-console.log(projectsFolder)
 try{
 	require(projectsFolder + '/gulpConfig.js');
 } 
@@ -76,15 +82,18 @@ catch(err){
 	return false;
 }
 
-const user = global.variables.user || 'user';  
-const password = global.variables.password || 'password';  
-const host = global.variables.host || '127.0.0.1';  
-const port = global.variables.port || 21;  //default is 21
-const localFilesGlob = global.variables.localFilesGlob || [ '**/*', '!_psd/**/*', '!libs/**/*', '!node_modules/**/*', 'site.gulp_configuration.js']; 
-const remoteFolder = global.variables.remoteFolder || '/path/to/folder';
-const protocol = global.variables.protocol || 'sftp'; //ftp or sttp
-const preprocessor = global.variables.preprocessor || 'less';
-const sourcePath = global.variables.sourcePath || '/';
+// const user = global.variables.user || 'user';  
+// const password = global.variables.password || 'password';  
+// const host = global.variables.host || '127.0.0.1';  
+// const port = global.variables.port || 21;  //default is 21
+// const localFilesGlob = global.variables.localFilesGlob || [ '**/*', '!_psd/**/*', '!libs/**/*', '!node_modules/**/*', 'site.gulp_configuration.js']; 
+// const remoteFolder = global.variables.remoteFolder || '/path/to/folder';
+// const protocol = global.variables.protocol || 'sftp'; //ftp or sttp
+const preprocessor = global.variables.preprocessor || 'less'; 
+const sourcePath = global.variables.sourcePath || '/';  // path to styles, scripts, images, etc
+const distExtension = global.variables.distExtension || 'php'; // output pages files extension
+const distType = global.variables.distType || ''; // if 'bitrix' change includes in .pup on require in php
+const isDevFolder = global.variables.isDevFolder || true; 
 
 
 let isDev = false;
@@ -124,12 +133,95 @@ function getSftpConnection() {
 /*-********************************************************-*/
 
 
-gulp.task('default', ['watch']);
+
+
+
+
+
+if(isDevFolder){
+
+	gulp.task('dev', gulpSequence('pathToDev', 'clean', ['html', 'pug', 'fonts'], 'vendors', ['css', 'es', 'images', 'videos', 'documents'], 'browser-sync', 'watch'));
+
+	gulp.task('dev:clean', gulpSequence('pathToDev', 'clean'));
+	
+	gulp.task('dev:build', gulpSequence('pathToDev', 'clean', ['html', 'pug', 'fonts'], 'vendors', 'css', 'es', 'images', 'documents', 'videos'));
+
+	gulp.task('dev:build:pages', ['pathToDev', 'html', 'pug']);
+	
+	gulp.task('dev:build:css', gulpSequence('pathToDev', 'fonts', 'vendors', 'css'));
+	
+	gulp.task('dev:build:es', ['pathToDev', 'es']);
+	
+	gulp.task('dev:build:images', ['pathToDev', 'images']);
+	
+	
+	
+	gulp.task('compile', gulpSequence('dev:build', 'pathToDist', 'dist:build'));
+
+	gulp.task('compile:build', gulpSequence('dev:build', 'pathToDist', 'dist:build:clean'));
+
+	gulp.task('compile:clean', gulpSequence('dev:clean', 'pathToDist', 'dist:clean'));
+
+	gulp.task('compile:build:clean', gulpSequence('compile:clean', 'compile:build'));
+
+	gulp.task('compile:pages', gulpSequence('dev:build:pages', 'pathToDist', 'dist:build:pages'));
+
+	gulp.task('compile:css', gulpSequence('dev:build:css', 'pathToDist', 'dist:build:css'));
+
+	gulp.task('compile:es', gulpSequence('dev:build:es', 'pathToDist', 'dist:build:es'));
+
+	gulp.task('compile:images', gulpSequence('dev:build:images', 'pathToDist', 'dist:build:images'));
+
+}
+
+
+gulp.task('dist', gulpSequence('clean', ['html', 'pug', 'fonts'], 'vendors', ['css', 'es', 'images', 'documents'], 'browser-sync', 'watch'));
+
+gulp.task('dist:clean', gulpSequence('clean'));
+
+gulp.task('dist:build', gulpSequence('fonts', 'vendors', ['css', 'es', 'images', 'documents']));
+
+gulp.task('dist:build:clean', gulpSequence('clean', ['html', 'pug', 'fonts'], 'vendors', ['css', 'es', 'images', 'documents']));
+
+gulp.task('dist:build:pages', gulpSequence(['html', 'pug']));
+
+gulp.task('dist:build:css', gulpSequence('fonts', 'vendors', 'css'));
+
+gulp.task('dist:build:es', gulpSequence('es'));
+
+gulp.task('dist:build:images', gulpSequence('images'));
+
+
+let defaultTask = isDevFolder ? 'dev' : 'dist';
+
+gulp.task('default', [defaultTask]);
+
 
 
 /*---------------------------------------------------------------------------*
- * sync
+ * services
  *---------------------------------------------------------------------------*/
+
+
+gulp.task('pathToDev', function() {
+	return new Promise(resolve => {		
+		if (isDevFolder){
+			destPath += 'dev/';
+			destSourcePath = projectsFolder + '/dev' + sourcePath;
+			isDev = true;
+			resolve();
+		}
+	})
+});
+
+gulp.task('pathToDist', function() {
+	return new Promise(resolve => {	
+		destPath = projectPath;
+		destSourcePath = projectsFolder + sourcePath;
+		isDev = false;
+		resolve();
+	})
+});
 
 
 
@@ -144,42 +236,35 @@ gulp.task('browser-sync', function() {
 });
 
 
-gulp.task('pathToDev', function() {
-	destPath += 'dev/';
-	destSourcePath = projectsFolder + '/dev' + sourcePath;
-	isDev = true;
-});
-
-
-
-gulp.task('watch', ['build:dev', 'browser-sync'], function() {
+gulp.task('watch', function() {
 	gulp.watch(projectPath + 'src/'+ preprocessor +'/**/*.less', ['css']);
 	gulp.watch(projectPath + 'src/'+ preprocessor +'/**/*.scss', ['css']);
 	gulp.watch(projectPath + 'src/es/**/*.js', ['es']);
 	gulp.watch(projectPath + 'src/pug/**/*.pug', ['pug']);
+	gulp.watch(projectPath + 'src/**/*.html', ['html']);
 	gulp.watch(projectPath + 'src/images/**/*.*', ['images']);
 	gulp.watch(projectPath + 'src/documents/**/*.*', ['documents']);
+	gulp.watch(projectPath + 'videos/**/*.*', ['videos']);
+	gulp.watch(projectPath + 'src/fonts/**/*.*', ['fonts']);
 
 	gulp.watch(destSourcePath +'js/**/*.js', browserSync.reload);
+	gulp.watch(destSourcePath +'css/**/*.css', browserSync.reload);
 	gulp.watch(destSourcePath +'images/**/*.*', browserSync.reload);
-	gulp.watch(projectPath + '**/*.html', browserSync.reload);
-	gulp.watch(projectPath + '**/*.php', browserSync.reload);
+	gulp.watch(destPath + 'videos/**/*.*', browserSync.reload);
+	gulp.watch(destPath + '**/*.html', browserSync.reload);
+	gulp.watch(destPath + '**/*.php', browserSync.reload);
 });
 
 
-
-gulp.task('build:dev', ['pathToDev', 'pug', 'css', 'es', 'fonts', 'images', 'documents']);
-gulp.task('build:dev:clean', ['pathToDev', 'pug', 'css', 'es', 'fonts', 'images', 'documents']);
-
-gulp.task('build:dist', ['fonts', 'css', 'es']);
-gulp.task('build:dist:project', ['pug', 'buildpugbase', 'buildpugareas', 'buildpugmetrix', 'css', 'es', 'fonts', 'images', 'documents']);
-
-/* gulp.task('clean', ()=>{
-	sourcePath+'css/*.css',
-	sourcePath+'js/*.js'
-}); */
-
-
+gulp.task('clean', function() {
+	return new Promise(resolve => {
+		if(isDev && isDevFolder) {
+			del([destPath], {force: true}).then(() => {resolve()});
+		} else if(((isDev && !isDevFolder) || !isDev) && sourcePath != '/'){
+			del([projectsFolder + '/' + sourcePath.split('/')[1]], {force: true}).then(() => {resolve()});
+		}
+	})
+});
 
 /* gulp.task('deploy', ['images'], function() {
 	if (protocol === 'ftp') {
@@ -195,24 +280,7 @@ gulp.task('build:dist:project', ['pug', 'buildpugbase', 'buildpugareas', 'buildp
 
 
 /*---------------------------------------------------------------------------*
- * ./sync
- *---------------------------------------------------------------------------*/
-
-
-
-/*---------------------------------------------------------------------------*
- * fonts
- *---------------------------------------------------------------------------*/
-
-gulp.task('fonts', function() {
-	fontsPath = global.variables.sourcePath == '/' ? projectPath + 'src/fonts/**/*-light.css' : projectPath + 'src/fonts/**/*-bitrix.css';
-	return gulp
-		.src(['!' + projectPath + 'src/fonts/**/*.css', '!' + projectPath + 'src/fonts/**/*.html', projectPath + 'src/fonts/**/*.*'])
-		.pipe(gulp.dest(destSourcePath + 'fonts'));
-});
-
-/*---------------------------------------------------------------------------*
- * ./fonts
+ * ./services
  *---------------------------------------------------------------------------*/
 
 
@@ -221,32 +289,40 @@ gulp.task('fonts', function() {
  * styles
  *---------------------------------------------------------------------------*/
 
-gulp.task('less', function() {
+
+gulp.task('fonts', function() {
+	fontsPath = global.variables.sourcePath == '/' ? projectPath + 'src/fonts/**/*-light.css' : projectPath + 'src/fonts/**/*-bitrix.css';
 	return gulp
-		.src(projectPath + 'src/less/*.less')
-		.pipe(gulpif(isDev, sourcemaps.init()))
-		.pipe(less()).on('error', gutil.log)
-		.pipe(autoprefixer(['last 15 versions', '> 1%', 'ie 11'], {cascade: true}))
-		.pipe(gulpif(isDev, sourcemaps.write()))
-		.pipe(gulpif(!isDev, cssnano({reduceIdents: false})))
+		.src([projectPath + 'src/fonts/**/*.eot', projectPath + 'src/fonts/**/*.svg', projectPath + 'src/fonts/**/*.ttf', projectPath + 'src/fonts/**/*.woff', projectPath + 'src/fonts/**/*.woff2'])
+		//.pipe(plumber())
+		.pipe(gulp.dest(destSourcePath + 'fonts'));
+});
+
+ gulp.task('vendors', function() {
+	return gulp
+		.src([projectPath + 'src/**/vendors/*.css', fontsPath])
+		.pipe(concat('vendors.css'))
 		.pipe(gulp.dest(destSourcePath + 'css'))
-		/* .pipe(rename({
-			suffix: '.min'
-		})) */
-		.pipe(gulpif(isWatching, browserSync.reload({stream: true})))
+});
+
+gulp.task('css', function() {
+	return gulp
+		.src(projectPath + 'src/' + preprocessor + '/*.' + preprocessor)
+		.pipe(gulpif((isDev && isDevFolder), sourcemaps.init()))
+		//.pipe(plumber())
+		.pipe(gulpif(preprocessor == 'less', less().on('error', gutil.log)))
+		.pipe(gulpif(preprocessor == 'sass', sass().on('error', sass.logError)))
+		.pipe(gulpif(/main/, gap.prependFile(destSourcePath + 'css/vendors.css')))
+		.pipe(autoprefixer(['last 15 versions', '> 1%'], {cascade: true}))
+		.pipe(gulpif((isDev && isDevFolder), sourcemaps.write()))
+		.pipe(gulpif((!isDev && isDevFolder), cssnano({reduceIdents: false})))
+		.pipe(gulp.dest(destSourcePath + 'css'))
+		.pipe(gulpif((!isDev && !isDevFolder), cssnano({reduceIdents: false})))
+		.pipe(gulpif((!isDev && !isDevFolder), rename({suffix: '.min'})))
+		.pipe(gulpif((!isDev && !isDevFolder), gulp.dest(destSourcePath + 'css')))
 });
 
 
-gulp.task('css',['less'], function() {
-	return gulp
-		.src([ './../libs/normalize.css/normalize.css', projectPath + 'src/**/vendors/*.css', fontsPath, destSourcePath + 'css/main.css' ])
-		.pipe(gulpif(isDev, sourcemaps.init()))
-		.pipe(concat('common.css'))
-		.pipe(gulpif(isDev, sourcemaps.write()))
-		.pipe(gulpif(!isDev, cssnano({reduceIdents: false})))
-		.pipe(gulp.dest(destSourcePath + 'css'))
-		/* .pipe(rename({suffix: '.min'}))  */
-});
 
 /*---------------------------------------------------------------------------*
  * ./styles
@@ -258,18 +334,25 @@ gulp.task('css',['less'], function() {
  * js
  *---------------------------------------------------------------------------*/
 
+
+
 gulp.task('es',  function() {
 	return gulp
 		.src(projectPath + 'src/es/**/*.js')
-		.pipe(gulpif(isDev, sourcemaps.init()))
+		.pipe(gulpif((isDev && isDevFolder), sourcemaps.init()))
+		.pipe(plumber())
 		/* .pipe(babel({})) */
 		/*.pipe(eslint())   
 		.pipe(eslint.format())*/
-		.pipe(gulpif(isDev, sourcemaps.write()))
-		.pipe(gulpif(!isDev, uglify()))
+		.pipe(gulpif((isDev && isDevFolder), sourcemaps.write()))
+		.pipe(gulpif((!isDev && isDevFolder), uglify()))
 		.pipe(gulp.dest(destSourcePath + 'js'))
-		/* .pipe(rename({ suffix: '.min' })) */
+		.pipe(gulpif((!isDev && !isDevFolder), uglify()))
+		.pipe(gulpif((!isDev && !isDevFolder), rename({suffix: '.min'})))
+		.pipe(gulpif((!isDev && !isDevFolder), gulp.dest(destSourcePath + 'css')))
 });
+
+
 
 /*---------------------------------------------------------------------------*
  * ./js
@@ -281,61 +364,83 @@ gulp.task('es',  function() {
  * pages
  *---------------------------------------------------------------------------*/
 
-gulp.task('pug',  function() {
+
+gulp.task('html', function () {
 	return gulp
-		.src([projectPath + 'src/pug/**/*.pug', '!' + projectPath + 'src/pug/base_areas/*.pug', '!' + projectPath + 'src/pug/components/*.pug', '!' + projectPath + 'src/pug/contacts/*.pug', '!' + projectPath + 'src/pug/include_areas/*.pug', '!' + projectPath + 'src/pug/metrix/*.pug', '!' + projectPath + 'src/pug/sections/*.pug'])
-		.pipe(pug({
-			pretty: true
-		}))
-		.pipe(rename(function(file) {
-			if(file.basename !== 'index'){
-				/* if (file.dirname == '.'){ */
-					file.dirname = path.join(file.dirname, file.basename);
-					file.basename = 'index';
-					file.extname = '.html';
-				/* } */
-			}
-		  }))
+		.src(['!' + projectPath + 'src/fonts/**/*.html', projectPath + 'src/**/*.html'])
+		//.pipe(plumber())
 		.pipe(gulp.dest(destPath))
 });
 
-gulp.task('buildpugbase',  function() {
+
+let includeRegExp = /include.+\.pug/g;
+function regExpFilter(str) {
+    let output 
+	let header = `<? \
+	require($_SERVER["DOCUMENT_ROOT"]."/bitrix/header.php"); \
+	$APPLICATION->SetPageProperty("title", "Главная"); \
+	$APPLICATION->SetTitle("Главная страница"); \
+	?>
+	`
+    let footer = `<?require($_SERVER["DOCUMENT_ROOT"]."/bitrix/footer.php");?>`;
+    if (str.search(/base_areas\/header.pug/ig) != -1){
+        output = header;
+    } else if (str.search(/base_areas\/footer.pug/ig) != -1){
+        output = footer;
+    } else {
+        let clearStr = str.split(' ')[1].replace(/\.pug/, '').replace(/\.\.\//, '')
+        output = '| <?require($_SERVER["DOCUMENT_ROOT"]."'+ sourcePath +  clearStr + '.php");?>';
+    }
+    return output;
+}
+
+
+let filterFolder = ['base_areas', 'components', 'elements', 'contacts', 'include_areas', 'metrix', 'sections'];
+
+function filterPath(filterFolder) {
+	return streamfilter((file, enc, cb) => {
+		cb(filterFolder.some(filterPath => (file.path.indexOf('\\' + filterPath + '\\') != -1)))
+	}, {
+		objectMode: true,
+	})
+}
+
+function renameFile(file){
+	let ext = isDev ? 'html' : distExtension;
+	if((file.basename == 'index' || file.basename == '404') && file.dirname == '.'){} else {
+		if(filterFolder.some(filterPath => (file.dirname.indexOf(filterPath) != -1))){
+			if (file.dirname.indexOf('base_areas') != -1){
+				file.dirname = sourcePath;
+			} else {
+				file.dirname = path.join(sourcePath, file.dirname);
+			}
+		} else {
+			file.dirname = path.join(file.dirname, file.basename);
+			file.basename = 'index';
+		}
+	}
+	
+	file.extname = '.' + ext;
+}
+
+let pugSrc = [projectPath + 'src/pug/**/*.pug', '!' + projectPath + 'src/pug/**/!template.pug'];
+
+gulp.task('pug',  function() {
 	return gulp
-		.src(projectPath + 'src/pug/base_areas/*.pug')
+		.src(pugSrc)
+		.pipe(gulpif(isDev || (!isDev && distType != 'bitrix'), filterPath(filterFolder)))
+		//.pipe(plumber())
+
+		.pipe(gulpif((!isDev && distExtension == 'php' && distType == 'bitrix'), replace(includeRegExp, regExpFilter)))
+
 		.pipe(pug({
 			pretty: true
 		}))
-
-		.pipe(rename(function(file) {
-			file.extname = '.php';
-		  }))
-		.pipe(gulp.dest(destSourcePath + 'base_areas'))
-});
-
-gulp.task('buildpugareas',  function() {
-	return gulp
-		.src(projectPath + 'src/pug/include_areas/*.pug')
-		.pipe(pug({
-			pretty: true
+		
+		.pipe(rename(function(file){
+			renameFile(file)
 		}))
-
-		.pipe(rename(function(file) {
-			file.extname = '.php';
-		  }))
-		.pipe(gulp.dest(destSourcePath + 'include_areas'))
-});
-
-gulp.task('buildpugmetrix',  function() {
-	return gulp
-		.src(projectPath + 'src/pug/metrix/*.pug')
-		.pipe(pug({
-			pretty: true
-		}))
-
-		.pipe(rename(function(file) {
-			file.extname = '.php';
-		  }))
-		.pipe(gulp.dest(destSourcePath + 'metrix'))
+		.pipe(gulp.dest(destPath))
 });
 
 /*---------------------------------------------------------------------------*
@@ -345,34 +450,33 @@ gulp.task('buildpugmetrix',  function() {
 
 
 /*---------------------------------------------------------------------------*
- * images
+ * files
  *---------------------------------------------------------------------------*/
  
 gulp.task('images', function () {
 	return gulp
 		.src([projectPath + 'src/images/**/*.*'])
-		.pipe(gulpif(!isDev, imagemin([
-			imagemin.gifsicle({interlaced: true}),
-			imagemin.jpegtran({progressive: true}),
-			imagemin.optipng({optimizationLevel: 5}),
-			imagemin.svgo({
-				plugins: [
-					{removeViewBox: true},
-					{cleanupIDs: false}
-				]
-			})
+		.pipe(debug({title: 'building img:', showFiles: true}))
+      	.pipe(plumber())
+      	.pipe(gulp.dest(destSourcePath + 'images'))
+      	.pipe(gulpif(!isDev, imagemin([
+			imageminGifsicle({interlaced: true}),
+			imageminJpegRecompress({
+				progressive: true,
+				max: 80,
+				min: 70
+			}),
+			imageminPngquant({quality: '80'}),
+			imageminSvgo({plugins: [{removeViewBox: true}]})
 		])))
-		.pipe(gulp.dest(destSourcePath + 'images'));
+		.pipe(gulpif(!isDev, gulp.dest(destSourcePath + 'images')));
 });
-
-/*---------------------------------------------------------------------------*
- * ./images
- *---------------------------------------------------------------------------*/
-
-
-/*---------------------------------------------------------------------------*
- * documents
- *---------------------------------------------------------------------------*/
+ 
+gulp.task('videos', function () {
+	return gulp
+		.src([projectPath + 'videos/**/*.*'])
+		.pipe(gulp.dest(destPath))
+});
  
 gulp.task('documents', function () {
 	return gulp
@@ -381,5 +485,5 @@ gulp.task('documents', function () {
 });
  
 /*---------------------------------------------------------------------------*
- * ./documents
+ * ./files
  *---------------------------------------------------------------------------*/
