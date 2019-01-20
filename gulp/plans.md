@@ -1,2 +1,0 @@
-- remove using `vendors.css` file
-- autogenerate font files

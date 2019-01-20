@@ -1,21 +1,23 @@
-/*
 #отладочные журналы npm
 *.log
 .git
+.eslintcache
 
 #зависимости проекта
 node_modules
 package-lock.json
+yarn.lock
+yarn-error.log
 
-#Атрибуты папки OSX
+#Атрибуты папки OSX и временные файлы
 .DS_Store
+*.tmp
+*~
+*.log
 
+#файлы текстовых редакторов
+.vscode
 
-!gulp
-!projects
-projects/*
-!projects/project.example
-
-!.gitignore
-!README.md
-
+made.md
+*.md
+# ! changelog.md

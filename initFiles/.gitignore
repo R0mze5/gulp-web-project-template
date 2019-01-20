@@ -1,0 +1,51 @@
+#отладочные журналы npm
+*.log
+.git
+.eslintcache
+
+#зависимости проекта
+node_modules
+package-lock.json
+yarn.lock
+yarn-error.log
+
+#Атрибуты папки OSX и временные файлы
+.DS_Store
+*.tmp
+*~
+*.log
+
+#Видеофайлы
+*.webm
+*.mp4
+
+#Файлы проекта
+/_psd
+/assets
+/dev
+*.zip
+*.rar
+*.tar.gz
+*.tgz
+*.psd
+
+#все файлы скачиваемых библиотек
+/libs
+
+#Папки bitrix
+/bitrix/
+/search
+/upload
+/test.php
+
+#файлы текстовых редакторов
+ftpsync.settings
+sftp-config.json
+.vscode
+.remote-sync.json
+
+#файл конфигурации gulp
+site.gulp_configuration.js
+gulpConfig.js
+tasks/deploy_configuration.json
+.gulpconfig

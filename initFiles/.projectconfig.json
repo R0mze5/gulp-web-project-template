@@ -1,0 +1,8 @@
+{
+  "preprocessor" : "less",
+  "devHardLink" : true,
+  "sourcePath" : "/local/templates/website/",
+  "distExtension" : "php",
+  "distType" : false,
+  "ie11Support": false
+}

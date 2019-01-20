@@ -1,0 +1,22 @@
+{
+  "gulpScripts": {
+    "project:init": "gulp --env=init",
+    "project:refresh": "gulp --env=refresh",
+    "dev": "gulp --env=dev",
+    "dev:clean": "gulp --env=dev:clean",
+    "prod": "gulp --env=prod",
+    "prod:init": "gulp --env=prod:init",
+    "prod:clean": "gulp --env=prod:clean"
+  },
+  "scripts": {
+    "test:lint": "eslint . --cache",
+    "test:lint:fix": "node_modules/.bin/eslint . --fix"
+  },
+  "devDependencies": {
+    "eslint": "^5.9.0",
+    "stylelint": "^9.9.0"
+  },
+  "dependencies": {
+    "@babel/polyfill": "^7.2.5"
+  }
+}

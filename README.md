@@ -2,12 +2,16 @@
 
 web-project-template - is the free task manager for web projects, based on gulp. Used just one `node_modules` folder for all projects
 
+
+_Read documentation in other languages:_\
+[_Документация на русском_](./assets/documentation/RU-ru/README.md)
+
 ## Install gulp
 
 Open `gulp` forder in terminal and enter the commands\
-`sudo npm i gulp -g` \
-`sudo npm i browser-sync -g` \
-`sudo npm i`
+`sudo yarn add gulp -g` \
+`sudo yarn add browser-sync -g` \
+`sudo yarn install`
 
 ## Stucture of initial projects
 
